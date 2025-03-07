@@ -11,21 +11,19 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as DashboardRouteImport } from './routes/dashboard/route'
+import { Route as ProtectedRouteImport } from './routes/protected/route'
 import { Route as IndexImport } from './routes/index'
-import { Route as DashboardIndexImport } from './routes/dashboard/index'
+import { Route as ProtectedIndexImport } from './routes/protected/index'
+import { Route as ProductsIndexImport } from './routes/products/index'
+import { Route as ProductsProductIdImport } from './routes/products/$productId'
 import { Route as AuthRegisterImport } from './routes/auth/register'
 import { Route as AuthLoginImport } from './routes/auth/login'
-import { Route as DashboardUsersIndexImport } from './routes/dashboard/users/index'
-import { Route as DashboardSettingsIndexImport } from './routes/dashboard/settings/index'
-import { Route as DashboardProductsIndexImport } from './routes/dashboard/products/index'
-import { Route as DashboardProductsNewIndexImport } from './routes/dashboard/products/new/index'
 
 // Create/Update Routes
 
-const DashboardRouteRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const ProtectedRouteRoute = ProtectedRouteImport.update({
+  id: '/protected',
+  path: '/protected',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -35,10 +33,22 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const DashboardIndexRoute = DashboardIndexImport.update({
+const ProtectedIndexRoute = ProtectedIndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => DashboardRouteRoute,
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+
+const ProductsIndexRoute = ProductsIndexImport.update({
+  id: '/products/',
+  path: '/products/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ProductsProductIdRoute = ProductsProductIdImport.update({
+  id: '/products/$productId',
+  path: '/products/$productId',
+  getParentRoute: () => rootRoute,
 } as any)
 
 const AuthRegisterRoute = AuthRegisterImport.update({
@@ -53,30 +63,6 @@ const AuthLoginRoute = AuthLoginImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const DashboardUsersIndexRoute = DashboardUsersIndexImport.update({
-  id: '/users/',
-  path: '/users/',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-
-const DashboardSettingsIndexRoute = DashboardSettingsIndexImport.update({
-  id: '/settings/',
-  path: '/settings/',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-
-const DashboardProductsIndexRoute = DashboardProductsIndexImport.update({
-  id: '/products/',
-  path: '/products/',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-
-const DashboardProductsNewIndexRoute = DashboardProductsNewIndexImport.update({
-  id: '/products/new/',
-  path: '/products/new/',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -88,11 +74,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/protected': {
+      id: '/protected'
+      path: '/protected'
+      fullPath: '/protected'
+      preLoaderRoute: typeof ProtectedRouteImport
       parentRoute: typeof rootRoute
     }
     '/auth/login': {
@@ -109,150 +95,120 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRegisterImport
       parentRoute: typeof rootRoute
     }
-    '/dashboard/': {
-      id: '/dashboard/'
-      path: '/'
-      fullPath: '/dashboard/'
-      preLoaderRoute: typeof DashboardIndexImport
-      parentRoute: typeof DashboardRouteImport
+    '/products/$productId': {
+      id: '/products/$productId'
+      path: '/products/$productId'
+      fullPath: '/products/$productId'
+      preLoaderRoute: typeof ProductsProductIdImport
+      parentRoute: typeof rootRoute
     }
-    '/dashboard/products/': {
-      id: '/dashboard/products/'
+    '/products/': {
+      id: '/products/'
       path: '/products'
-      fullPath: '/dashboard/products'
-      preLoaderRoute: typeof DashboardProductsIndexImport
-      parentRoute: typeof DashboardRouteImport
+      fullPath: '/products'
+      preLoaderRoute: typeof ProductsIndexImport
+      parentRoute: typeof rootRoute
     }
-    '/dashboard/settings/': {
-      id: '/dashboard/settings/'
-      path: '/settings'
-      fullPath: '/dashboard/settings'
-      preLoaderRoute: typeof DashboardSettingsIndexImport
-      parentRoute: typeof DashboardRouteImport
-    }
-    '/dashboard/users/': {
-      id: '/dashboard/users/'
-      path: '/users'
-      fullPath: '/dashboard/users'
-      preLoaderRoute: typeof DashboardUsersIndexImport
-      parentRoute: typeof DashboardRouteImport
-    }
-    '/dashboard/products/new/': {
-      id: '/dashboard/products/new/'
-      path: '/products/new'
-      fullPath: '/dashboard/products/new'
-      preLoaderRoute: typeof DashboardProductsNewIndexImport
-      parentRoute: typeof DashboardRouteImport
+    '/protected/': {
+      id: '/protected/'
+      path: '/'
+      fullPath: '/protected/'
+      preLoaderRoute: typeof ProtectedIndexImport
+      parentRoute: typeof ProtectedRouteImport
     }
   }
 }
 
 // Create and export the route tree
 
-interface DashboardRouteRouteChildren {
-  DashboardIndexRoute: typeof DashboardIndexRoute
-  DashboardProductsIndexRoute: typeof DashboardProductsIndexRoute
-  DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
-  DashboardUsersIndexRoute: typeof DashboardUsersIndexRoute
-  DashboardProductsNewIndexRoute: typeof DashboardProductsNewIndexRoute
+interface ProtectedRouteRouteChildren {
+  ProtectedIndexRoute: typeof ProtectedIndexRoute
 }
 
-const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
-  DashboardIndexRoute: DashboardIndexRoute,
-  DashboardProductsIndexRoute: DashboardProductsIndexRoute,
-  DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
-  DashboardUsersIndexRoute: DashboardUsersIndexRoute,
-  DashboardProductsNewIndexRoute: DashboardProductsNewIndexRoute,
+const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
+  ProtectedIndexRoute: ProtectedIndexRoute,
 }
 
-const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
-  DashboardRouteRouteChildren,
+const ProtectedRouteRouteWithChildren = ProtectedRouteRoute._addFileChildren(
+  ProtectedRouteRouteChildren,
 )
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/protected': typeof ProtectedRouteRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
-  '/dashboard/': typeof DashboardIndexRoute
-  '/dashboard/products': typeof DashboardProductsIndexRoute
-  '/dashboard/settings': typeof DashboardSettingsIndexRoute
-  '/dashboard/users': typeof DashboardUsersIndexRoute
-  '/dashboard/products/new': typeof DashboardProductsNewIndexRoute
+  '/products/$productId': typeof ProductsProductIdRoute
+  '/products': typeof ProductsIndexRoute
+  '/protected/': typeof ProtectedIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
-  '/dashboard': typeof DashboardIndexRoute
-  '/dashboard/products': typeof DashboardProductsIndexRoute
-  '/dashboard/settings': typeof DashboardSettingsIndexRoute
-  '/dashboard/users': typeof DashboardUsersIndexRoute
-  '/dashboard/products/new': typeof DashboardProductsNewIndexRoute
+  '/products/$productId': typeof ProductsProductIdRoute
+  '/products': typeof ProductsIndexRoute
+  '/protected': typeof ProtectedIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/protected': typeof ProtectedRouteRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
-  '/dashboard/': typeof DashboardIndexRoute
-  '/dashboard/products/': typeof DashboardProductsIndexRoute
-  '/dashboard/settings/': typeof DashboardSettingsIndexRoute
-  '/dashboard/users/': typeof DashboardUsersIndexRoute
-  '/dashboard/products/new/': typeof DashboardProductsNewIndexRoute
+  '/products/$productId': typeof ProductsProductIdRoute
+  '/products/': typeof ProductsIndexRoute
+  '/protected/': typeof ProtectedIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/dashboard'
+    | '/protected'
     | '/auth/login'
     | '/auth/register'
-    | '/dashboard/'
-    | '/dashboard/products'
-    | '/dashboard/settings'
-    | '/dashboard/users'
-    | '/dashboard/products/new'
+    | '/products/$productId'
+    | '/products'
+    | '/protected/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth/login'
     | '/auth/register'
-    | '/dashboard'
-    | '/dashboard/products'
-    | '/dashboard/settings'
-    | '/dashboard/users'
-    | '/dashboard/products/new'
+    | '/products/$productId'
+    | '/products'
+    | '/protected'
   id:
     | '__root__'
     | '/'
-    | '/dashboard'
+    | '/protected'
     | '/auth/login'
     | '/auth/register'
-    | '/dashboard/'
-    | '/dashboard/products/'
-    | '/dashboard/settings/'
-    | '/dashboard/users/'
-    | '/dashboard/products/new/'
+    | '/products/$productId'
+    | '/products/'
+    | '/protected/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
+  ProtectedRouteRoute: typeof ProtectedRouteRouteWithChildren
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
+  ProductsProductIdRoute: typeof ProductsProductIdRoute
+  ProductsIndexRoute: typeof ProductsIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRouteRoute: DashboardRouteRouteWithChildren,
+  ProtectedRouteRoute: ProtectedRouteRouteWithChildren,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
+  ProductsProductIdRoute: ProductsProductIdRoute,
+  ProductsIndexRoute: ProductsIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -266,22 +222,20 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/dashboard",
+        "/protected",
         "/auth/login",
-        "/auth/register"
+        "/auth/register",
+        "/products/$productId",
+        "/products/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/dashboard": {
-      "filePath": "dashboard/route.tsx",
+    "/protected": {
+      "filePath": "protected/route.tsx",
       "children": [
-        "/dashboard/",
-        "/dashboard/products/",
-        "/dashboard/settings/",
-        "/dashboard/users/",
-        "/dashboard/products/new/"
+        "/protected/"
       ]
     },
     "/auth/login": {
@@ -290,25 +244,15 @@ export const routeTree = rootRoute
     "/auth/register": {
       "filePath": "auth/register.tsx"
     },
-    "/dashboard/": {
-      "filePath": "dashboard/index.tsx",
-      "parent": "/dashboard"
+    "/products/$productId": {
+      "filePath": "products/$productId.tsx"
     },
-    "/dashboard/products/": {
-      "filePath": "dashboard/products/index.tsx",
-      "parent": "/dashboard"
+    "/products/": {
+      "filePath": "products/index.tsx"
     },
-    "/dashboard/settings/": {
-      "filePath": "dashboard/settings/index.tsx",
-      "parent": "/dashboard"
-    },
-    "/dashboard/users/": {
-      "filePath": "dashboard/users/index.tsx",
-      "parent": "/dashboard"
-    },
-    "/dashboard/products/new/": {
-      "filePath": "dashboard/products/new/index.tsx",
-      "parent": "/dashboard"
+    "/protected/": {
+      "filePath": "protected/index.tsx",
+      "parent": "/protected"
     }
   }
 }
