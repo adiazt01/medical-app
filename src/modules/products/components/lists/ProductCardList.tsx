@@ -3,7 +3,7 @@ import { ProductCard } from "../ProductCard";
 import { ProductCardSkeleton } from "../skeletons/ProductCardSkeleton";
 
 interface IProductCardListProps {
-    products: IProduct[];
+    products: IProduct[] | undefined;
     isLoading: boolean;
 }
 

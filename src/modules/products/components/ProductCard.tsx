@@ -6,6 +6,7 @@ import { getImage } from "@/supabase/supabase";
 import { useQuery } from "@tanstack/react-query";
 import { Heart, ShoppingCart } from "lucide-react";
 import { IProduct } from "../interface/product-interface";
+import { Link } from "@tanstack/react-router";
 
 export function ProductCard({ id, file, name, brand, rating, reviewCount, price, originalPrice, discount, inStock, availableBranches }: IProduct) {
     const { path: image } = file
@@ -81,17 +82,14 @@ export function ProductCard({ id, file, name, brand, rating, reviewCount, price,
                         <span className="text-xs text-muted-foreground line-through">${originalPrice}</span>
                     )}
                 </div>
-                {/* <div className="mt-1 text-[10px] text-muted-foreground">
-                    {inStock ? <span className="text-green-600">En stock</span> : <span>Agotado</span>}
-                    {availableBranches.length > 0 && inStock && (
-                        <span> - Disponible en {availableBranches.length} sucursales</span>
-                    )}
-                </div> */}
             </CardContent>
             <CardFooter className="p-2 pt-0 sm:p-4 sm:pt-0">
-                <Button className="w-full text-xs" disabled={!inStock}>
-                    <ShoppingCart className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-                    Agregar
+                <Button asChild>
+                    <Link to="/products/$productId" params={{
+                        productId: id.toString()
+                    }}>
+                        Ver detalles
+                    </Link>
                 </Button>
             </CardFooter>
         </Card>

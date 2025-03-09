@@ -14,3 +14,13 @@ export interface IProduct {
     inStock: boolean;
     availableBranches: string[];
 }
+
+
+export interface IGetProductsResponse {
+    data: IProduct[];
+    meta: {
+        total: number;
+        page: number;
+        limit: number;
+    };
+}

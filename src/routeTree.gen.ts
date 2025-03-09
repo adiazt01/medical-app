@@ -18,6 +18,10 @@ import { Route as ProductsIndexImport } from './routes/products/index'
 import { Route as ProductsProductIdImport } from './routes/products/$productId'
 import { Route as AuthRegisterImport } from './routes/auth/register'
 import { Route as AuthLoginImport } from './routes/auth/login'
+import { Route as ProtectedProfileIndexImport } from './routes/protected/profile/index'
+import { Route as ProtectedPaymentIndexImport } from './routes/protected/payment/index'
+import { Route as ProtectedCartIndexImport } from './routes/protected/cart/index'
+import { Route as ProtectedPaymentEndIndexImport } from './routes/protected/payment/end/index'
 
 // Create/Update Routes
 
@@ -61,6 +65,30 @@ const AuthLoginRoute = AuthLoginImport.update({
   id: '/auth/login',
   path: '/auth/login',
   getParentRoute: () => rootRoute,
+} as any)
+
+const ProtectedProfileIndexRoute = ProtectedProfileIndexImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+
+const ProtectedPaymentIndexRoute = ProtectedPaymentIndexImport.update({
+  id: '/payment/',
+  path: '/payment/',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+
+const ProtectedCartIndexRoute = ProtectedCartIndexImport.update({
+  id: '/cart/',
+  path: '/cart/',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+
+const ProtectedPaymentEndIndexRoute = ProtectedPaymentEndIndexImport.update({
+  id: '/payment/end/',
+  path: '/payment/end/',
+  getParentRoute: () => ProtectedRouteRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -116,6 +144,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedIndexImport
       parentRoute: typeof ProtectedRouteImport
     }
+    '/protected/cart/': {
+      id: '/protected/cart/'
+      path: '/cart'
+      fullPath: '/protected/cart'
+      preLoaderRoute: typeof ProtectedCartIndexImport
+      parentRoute: typeof ProtectedRouteImport
+    }
+    '/protected/payment/': {
+      id: '/protected/payment/'
+      path: '/payment'
+      fullPath: '/protected/payment'
+      preLoaderRoute: typeof ProtectedPaymentIndexImport
+      parentRoute: typeof ProtectedRouteImport
+    }
+    '/protected/profile/': {
+      id: '/protected/profile/'
+      path: '/profile'
+      fullPath: '/protected/profile'
+      preLoaderRoute: typeof ProtectedProfileIndexImport
+      parentRoute: typeof ProtectedRouteImport
+    }
+    '/protected/payment/end/': {
+      id: '/protected/payment/end/'
+      path: '/payment/end'
+      fullPath: '/protected/payment/end'
+      preLoaderRoute: typeof ProtectedPaymentEndIndexImport
+      parentRoute: typeof ProtectedRouteImport
+    }
   }
 }
 
@@ -123,10 +179,18 @@ declare module '@tanstack/react-router' {
 
 interface ProtectedRouteRouteChildren {
   ProtectedIndexRoute: typeof ProtectedIndexRoute
+  ProtectedCartIndexRoute: typeof ProtectedCartIndexRoute
+  ProtectedPaymentIndexRoute: typeof ProtectedPaymentIndexRoute
+  ProtectedProfileIndexRoute: typeof ProtectedProfileIndexRoute
+  ProtectedPaymentEndIndexRoute: typeof ProtectedPaymentEndIndexRoute
 }
 
 const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
   ProtectedIndexRoute: ProtectedIndexRoute,
+  ProtectedCartIndexRoute: ProtectedCartIndexRoute,
+  ProtectedPaymentIndexRoute: ProtectedPaymentIndexRoute,
+  ProtectedProfileIndexRoute: ProtectedProfileIndexRoute,
+  ProtectedPaymentEndIndexRoute: ProtectedPaymentEndIndexRoute,
 }
 
 const ProtectedRouteRouteWithChildren = ProtectedRouteRoute._addFileChildren(
@@ -141,6 +205,10 @@ export interface FileRoutesByFullPath {
   '/products/$productId': typeof ProductsProductIdRoute
   '/products': typeof ProductsIndexRoute
   '/protected/': typeof ProtectedIndexRoute
+  '/protected/cart': typeof ProtectedCartIndexRoute
+  '/protected/payment': typeof ProtectedPaymentIndexRoute
+  '/protected/profile': typeof ProtectedProfileIndexRoute
+  '/protected/payment/end': typeof ProtectedPaymentEndIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -150,6 +218,10 @@ export interface FileRoutesByTo {
   '/products/$productId': typeof ProductsProductIdRoute
   '/products': typeof ProductsIndexRoute
   '/protected': typeof ProtectedIndexRoute
+  '/protected/cart': typeof ProtectedCartIndexRoute
+  '/protected/payment': typeof ProtectedPaymentIndexRoute
+  '/protected/profile': typeof ProtectedProfileIndexRoute
+  '/protected/payment/end': typeof ProtectedPaymentEndIndexRoute
 }
 
 export interface FileRoutesById {
@@ -161,6 +233,10 @@ export interface FileRoutesById {
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/': typeof ProductsIndexRoute
   '/protected/': typeof ProtectedIndexRoute
+  '/protected/cart/': typeof ProtectedCartIndexRoute
+  '/protected/payment/': typeof ProtectedPaymentIndexRoute
+  '/protected/profile/': typeof ProtectedProfileIndexRoute
+  '/protected/payment/end/': typeof ProtectedPaymentEndIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -173,6 +249,10 @@ export interface FileRouteTypes {
     | '/products/$productId'
     | '/products'
     | '/protected/'
+    | '/protected/cart'
+    | '/protected/payment'
+    | '/protected/profile'
+    | '/protected/payment/end'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -181,6 +261,10 @@ export interface FileRouteTypes {
     | '/products/$productId'
     | '/products'
     | '/protected'
+    | '/protected/cart'
+    | '/protected/payment'
+    | '/protected/profile'
+    | '/protected/payment/end'
   id:
     | '__root__'
     | '/'
@@ -190,6 +274,10 @@ export interface FileRouteTypes {
     | '/products/$productId'
     | '/products/'
     | '/protected/'
+    | '/protected/cart/'
+    | '/protected/payment/'
+    | '/protected/profile/'
+    | '/protected/payment/end/'
   fileRoutesById: FileRoutesById
 }
 
@@ -235,7 +323,11 @@ export const routeTree = rootRoute
     "/protected": {
       "filePath": "protected/route.tsx",
       "children": [
-        "/protected/"
+        "/protected/",
+        "/protected/cart/",
+        "/protected/payment/",
+        "/protected/profile/",
+        "/protected/payment/end/"
       ]
     },
     "/auth/login": {
@@ -252,6 +344,22 @@ export const routeTree = rootRoute
     },
     "/protected/": {
       "filePath": "protected/index.tsx",
+      "parent": "/protected"
+    },
+    "/protected/cart/": {
+      "filePath": "protected/cart/index.tsx",
+      "parent": "/protected"
+    },
+    "/protected/payment/": {
+      "filePath": "protected/payment/index.tsx",
+      "parent": "/protected"
+    },
+    "/protected/profile/": {
+      "filePath": "protected/profile/index.tsx",
+      "parent": "/protected"
+    },
+    "/protected/payment/end/": {
+      "filePath": "protected/payment/end/index.tsx",
       "parent": "/protected"
     }
   }

@@ -1,11 +1,13 @@
 import { get } from "@/config/http";
 import qs from 'qs';
+import { IGetProductsResponse } from "../interface/product-interface";
 
 export const getProducts = async (
     page: number = 1,
     limit: number = 10,
     search: string = '',
-) => {
+):
+    Promise<IGetProductsResponse> => {
     const queryObject: any = {
         page,
         limit,

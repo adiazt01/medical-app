@@ -21,14 +21,14 @@ export const Route = createFileRoute('/products/')({
 
 function RouteComponent() {
   const [showFilters, setShowFilters] = useState(false)
-  const [ search, setSearch ] = useState()
+  const [search, setSearch] = useState()
   const debouncedSearch = useDebounce(search, 500)
- 
+
   const { page, limit, setPage, totalPages, setTotalPages } = usePagination()
 
   const { data, isLoading } = useQuery({
     queryKey: [QueryKeys.products, debouncedSearch, page, limit],
-    queryFn: async () => { 
+    queryFn: async () => {
       const data = await getProducts(page, limit, search)
       const totalPages = Math.ceil(data?.meta?.total / limit)
       setTotalPages(totalPages)
@@ -40,7 +40,6 @@ function RouteComponent() {
     setSearch(e.target.value)
   }
 
-  // Datos de ejemplo
   const branches = [
     { id: 1, name: "Sucursal Centro" },
     { id: 2, name: "Sucursal Norte" },
@@ -69,7 +68,7 @@ function RouteComponent() {
 
 
   return (
-    <div className="flex flex-col w-full border px-4 py-6 md:py-8">
+    <div className="flex flex-col w-full px-4 py-6 md:py-8">
       {/* Título y controles móviles */}
       <div className="mb-6 flex flex-wrap items-center justify-end gap-4">
         <Input
@@ -134,41 +133,7 @@ function RouteComponent() {
 
                 <Separator />
 
-                {/* Filtro de precio */}
-                {/* <div>
-                  <div className="mb-3 flex items-center justify-between">
-                    <h3 className="font-medium">Rango de precio</h3>
-                    <span className="text-xs text-muted-foreground">
-                      ${priceRange[0]} - ${priceRange[1]}
-                    </span>
-                  </div>
-                  <Slider
-                    defaultValue={[0, priceRange[1]]}
-                    max={priceRange[0]}
-                    step={1}
-                    value={priceRange}
-                    onValueChange={setPriceRange}
-                    className="py-4"
-                  />
-                  <div className="mt-2 flex items-center gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={priceRange[0]}
-                      onChange={(e) => setPriceRange([Number.parseInt(e.target.value) || 0, priceRange[1]])}
-                      className="h-8 text-xs"
-                    />
-                    <span className="text-muted-foreground">-</span>
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={priceRange[1]}
-                      onChange={(e) => setPriceRange([priceRange[0], Number.parseInt(e.target.value) || 100])}
-                      className="h-8 text-xs"
-                    />
-                  </div>
-                </div> */}
-
+          
                 <Separator />
 
                 {/* Filtro de marcas */}
@@ -244,9 +209,6 @@ function RouteComponent() {
 
             <Separator />
 
-            {/* Filtro de precio */}
-            <Separator />
-
             {/* Filtro de marcas */}
             <div>
               <h3 className="mb-3 font-medium">Marcas</h3>
@@ -266,42 +228,12 @@ function RouteComponent() {
             </div>
 
             <Separator />
-
-            {/* Filtro de disponibilidad */}
-            <div>
-              <h3 className="mb-3 font-medium">Disponibilidad</h3>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="in-stock" />
-                <Label htmlFor="in-stock" className="text-sm">
-                  Solo productos en stock
-                </Label>
-              </div>
-            </div>
           </div>
         </div>
 
         {/* Lista de productos */}
         <div>
-          <div className="mb-4 flex items-center justify-between">
-            {/* <p className="text-sm text-muted-foreground">Mostrando 1-{data.length} de 593 productos</p> */}
-            <div className="hidden sm:block">
-              <Select defaultValue="12">
-                <SelectTrigger className="h-8 w-[70px] text-xs">
-                  <SelectValue placeholder="12" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="12">12</SelectItem>
-                  <SelectItem value="24">24</SelectItem>
-                  <SelectItem value="36">36</SelectItem>
-                  <SelectItem value="48">48</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-
           <ProductCardList products={data?.data} isLoading={isLoading} />
-
           {/* Paginación */}
           <div className="mt-8 flex items-center justify-center gap-1">
             <PaginationButtons page={page} setPage={setPage} totalPages={totalPages} />

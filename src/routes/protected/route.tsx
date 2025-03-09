@@ -6,13 +6,13 @@ export const Route = createFileRoute('/protected')({
       auth
     }
   }) => {
-    const token = auth.isAuthenticated
-    
-    if (!token) {
-      throw redirect({
-        to: '/auth/login',
-      })
-    }
+    // const token = auth.isAuthenticated
+    // console.log(token)
+    // if (!token) {
+    //   throw redirect({
+    //     to: '/auth/login',
+    //   })
+    // }
   },
   component: LayoutComponent,
 })
