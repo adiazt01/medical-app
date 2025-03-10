@@ -23,3 +23,10 @@ export const getProducts = async (
     const response = await get('/medicines' + (query ? `?${query}` : ''));
     return response;
 }
+
+export const getProduct = async (
+    productId: number,
+) => {
+    const response = await get("/medicines/"+ productId);
+    return response;
+}
