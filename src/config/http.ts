@@ -1,7 +1,7 @@
 import axios, { AxiosHeaders, AxiosHeaderValue, AxiosInstance, AxiosRequestConfig, AxiosResponse, RawAxiosRequestHeaders } from 'axios';
 
 const axiosInstance: AxiosInstance = axios.create({
-    baseURL: 'https://medical-app-backend-abf4.onrender.com',
+    baseURL: 'http://localhost:3000',
     headers: {
         'Content-Type': 'application/json',
     },

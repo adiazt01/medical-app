@@ -27,12 +27,6 @@ export default function Image({
     )
   }
 
-
-
-  return (
-    <AspectRatio ratio={4 / 3}>
-      <img src={data.publicUrl} alt="Image" className="h-full"/>
-
   return (
     <AspectRatio ratio={4 / 3} className="relative">
       <img src={data?.publicUrl} alt="Image"  className="object-cover h-full w-full"/>

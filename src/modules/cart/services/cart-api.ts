@@ -1,4 +1,4 @@
-import { del, get, patch, put } from "@/config/http";
+import { del, get, patch, post, put } from "@/config/http";
 import { IGetCartItems } from "../interface/cart-api";
 import { IBranchMedicine } from "@/modules/products/interface/branch-interface";
 
@@ -16,6 +16,12 @@ export const getCartItems = async (): Promise<IGetCartItems> => {
     const response = await get('/carts');
 
     return response as IGetCartItems;
+}
+
+export const addProductToCart = async (branchMedicineId: number, quantity: number): Promise<CartItem> => {
+    const response = await post(`/carts`, { branchMedicineId, quantity });
+
+    return response as CartItem;
 }
 
 export const updateCartItem = async (cartItemId: number, quantity: number): Promise<CartItem> => {
