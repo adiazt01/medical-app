@@ -1,117 +1,176 @@
-import * as React from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+
+import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { ArrowLeft, ArrowRight, ShoppingBag, TrendingUp } from "lucide-react"
+import { ProductCardList } from "@/modules/products/components/lists/ProductCardList"
+import { getProducts } from "@/modules/products/services/medicines-api"
+import Image from "@/modules/core/components/Image"
+import { createFileRoute } from "@tanstack/react-router"
+import { QueryKeys } from "@/config/query-key"
 
 export const Route = createFileRoute('/')({
-  component: HomeComponent,
+  component: LandingPage,
 })
 
-function HomeComponent() {
+export default function LandingPage() {
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(0)
+  const limit = 8 // Número de productos por página
+
+  // Consulta para obtener productos
+  const { data, isLoading } = useQuery({
+    queryKey: [QueryKeys.products, page, limit],
+    queryFn: async () => {
+      const data = await getProducts(page, limit)
+      const totalPages = Math.ceil(data?.meta?.total / limit)
+      setTotalPages(totalPages)
+      return data
+    },
+  })
+  
+  console.log(data)
+
+  // Función para cambiar de página
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage)
+    }
+  }
+
+  // Extraer productos destacados (primeros 2)
+  const featuredProducts = data?.data?.slice(0, 2)
+
+  // Resto de productos
+  const regularProducts = data?.data?.slice(2)
+
   return (
-    <main className="w-full flex-col justify-center">
-      <section className="bg-muted py-8 sm:py-12">
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative py-12 md:py-20">
         <div className="container px-4 md:px-6">
-          <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
-            <div className="flex flex-col justify-center space-y-4">
-              <div className="space-y-2">
-                <h1 className="text-2xl font-bold tracking-tighter sm:text-3xl md:text-4xl lg:text-5xl">
-                  Tu salud, nuestra prioridad
-                </h1>
-                <p className="max-w-[600px] text-sm text-muted-foreground sm:text-base md:text-xl">
-                  Nuestro compromiso es proporcionarte productos de alta calidad y un servicio excepcional para garantizar tu bienestar. Explora nuestra tienda y descubre cómo podemos ayudarte a mantener y mejorar tu salud.
-                </p>
-              </div>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Button size="lg" className="sm:text-sm md:text-base">
-                  Comprar
+          <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
+            <div className="space-y-4">
+              <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+                Descubre nuestros productos de calidad
+              </h1>
+              <p className="text-muted-foreground md:text-xl">
+                Encuentra todo lo que necesitas con los mejores precios y calidad garantizada.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                <Button size="lg" className="gap-2">
+                  <ShoppingBag className="h-5 w-5" />
+                  Comprar ahora
+                </Button>
+                <Button variant="outline" size="lg">
+                  Ver ofertas
                 </Button>
               </div>
             </div>
-
           </div>
         </div>
       </section>
-      <section className="py-8 sm:py-12">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold tracking-tighter sm:text-3xl md:text-4xl lg:text-5xl">
-                Compra por categoria
-              </h2>
-              <p className="max-w-[600px] text-sm text-muted-foreground sm:text-base md:text-xl">
-                Explora nuestras categorías y encuentra los productos que necesitas para cuidar de tu salud y bienestar.
-              </p>
+
+      {/* Featured Products Section */}
+      {featuredProducts && featuredProducts.length > 0 && (
+        <section className="py-12">
+          <div className="container px-4 md:px-6">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight">Productos destacados</h2>
+                <p className="text-muted-foreground">Nuestras mejores recomendaciones para ti</p>
+              </div>
+              <TrendingUp className="h-5 w-5 text-primary" />
             </div>
-          </div>
-          <div className="mt-6 sm:mt-8 grid grid-cols-3 gap-3 sm:gap-4">
-            {[
-              { name: "Medicinas", icon: "💊" },
-              { name: "Vitaminas", icon: "🍊" },
-              { name: "Cuidado personal", icon: "🧴" },
-            ].map((category) => (
-              <Card key={category.name} className="flex flex-col items-center justify-center text-center">
-                <CardHeader className="pb-2 pt-4">
-                  <div className="text-3xl sm:text-4xl">{category.icon}</div>
-                </CardHeader>
-                <CardContent className="pb-2 pt-0">
-                  <CardTitle className="text-sm sm:text-base">{category.name}</CardTitle>
-                </CardContent>
-                <CardFooter className="pt-0">
-                  <Button variant="ghost" size="sm" className="text-xs sm:text-sm">
-                    Ver mas
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-      <div className="grid grid-cols-2 gap-3 xs:gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-      <Card key={1} className="overflow-hidden">
-        <div className="relative">
-          <img
-            src={"/placeholder.svg"}
 
-            className="aspect-square w-full object-cover"
-            width={200}
-            height={200}
-          />
-          {/* {product.discount && (
-            <Badge className="absolute left-2 top-2 bg-primary text-xs">{10}</Badge>
-          )} */}
-        </div>
-        <CardContent className="p-2 sm:p-4">
-          <h3 className="text-xs font-semibold sm:text-sm md:text-base">{"product"}</h3>
-          <p className="text-xs text-muted-foreground">By MediMart</p>
-          <div className="mt-1 sm:mt-2 flex items-center justify-between">
-            <span className="text-xs font-bold sm:text-sm md:text-base">{100}</span>
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <svg
-                  key={star}
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500"
+            <div className="grid gap-6 md:grid-cols-2">
+              {featuredProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="group relative overflow-hidden rounded-lg border shadow-sm transition-all hover:shadow-md"
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                  <div className="aspect-[16/9]">
+                    {product.file && (
+                      <Image 
+                        queryKey="products"                        
+                        file={product.file || "/placeholder.svg"}
+                        alt={product.name}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                      />
+                    )}
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end">
+                    <div className="p-4 text-white w-full">
+                      <h3 className="font-bold">{product.name}</h3>
+                      <p className="text-sm opacity-90">${product.price}</p>
+                    </div>
+                  </div>
+                </div>
               ))}
-              <span className="text-[10px] sm:text-xs text-muted-foreground">(42)</span>
             </div>
           </div>
-        </CardContent>
-        <CardFooter className="p-2 pt-0 sm:p-4 sm:pt-0">
-          <Button className="w-full text-xs sm:text-sm">Add to Cart</Button>
-        </CardFooter>
-      </Card>
-      </div>
-    </main>
+        </section>
+      )}
+
+      {/* All Products Section */}
+      <section className="py-12">
+        <div className="container px-4 md:px-6">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold tracking-tight">Todos los productos</h2>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1 || isLoading}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm">
+                Página {page} de {totalPages || 1}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages || isLoading}
+              >
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Productos */}
+          <ProductCardList products={regularProducts} isLoading={isLoading} />
+
+          {/* Paginación móvil (visible solo en móvil) */}
+          <div className="flex justify-center mt-8 md:hidden">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1 || isLoading}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm">
+                Página {page} de {totalPages || 1}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages || isLoading}
+              >
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action */}
+    </div>
   )
 }

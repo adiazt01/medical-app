@@ -21,7 +21,6 @@ import { Route as AuthLoginImport } from './routes/auth/login'
 import { Route as ProtectedProfileIndexImport } from './routes/protected/profile/index'
 import { Route as ProtectedPaymentIndexImport } from './routes/protected/payment/index'
 import { Route as ProtectedCartIndexImport } from './routes/protected/cart/index'
-import { Route as ProtectedPaymentEndIndexImport } from './routes/protected/payment/end/index'
 
 // Create/Update Routes
 
@@ -82,12 +81,6 @@ const ProtectedPaymentIndexRoute = ProtectedPaymentIndexImport.update({
 const ProtectedCartIndexRoute = ProtectedCartIndexImport.update({
   id: '/cart/',
   path: '/cart/',
-  getParentRoute: () => ProtectedRouteRoute,
-} as any)
-
-const ProtectedPaymentEndIndexRoute = ProtectedPaymentEndIndexImport.update({
-  id: '/payment/end/',
-  path: '/payment/end/',
   getParentRoute: () => ProtectedRouteRoute,
 } as any)
 
@@ -165,13 +158,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedProfileIndexImport
       parentRoute: typeof ProtectedRouteImport
     }
-    '/protected/payment/end/': {
-      id: '/protected/payment/end/'
-      path: '/payment/end'
-      fullPath: '/protected/payment/end'
-      preLoaderRoute: typeof ProtectedPaymentEndIndexImport
-      parentRoute: typeof ProtectedRouteImport
-    }
   }
 }
 
@@ -182,7 +168,6 @@ interface ProtectedRouteRouteChildren {
   ProtectedCartIndexRoute: typeof ProtectedCartIndexRoute
   ProtectedPaymentIndexRoute: typeof ProtectedPaymentIndexRoute
   ProtectedProfileIndexRoute: typeof ProtectedProfileIndexRoute
-  ProtectedPaymentEndIndexRoute: typeof ProtectedPaymentEndIndexRoute
 }
 
 const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
@@ -190,7 +175,6 @@ const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
   ProtectedCartIndexRoute: ProtectedCartIndexRoute,
   ProtectedPaymentIndexRoute: ProtectedPaymentIndexRoute,
   ProtectedProfileIndexRoute: ProtectedProfileIndexRoute,
-  ProtectedPaymentEndIndexRoute: ProtectedPaymentEndIndexRoute,
 }
 
 const ProtectedRouteRouteWithChildren = ProtectedRouteRoute._addFileChildren(
@@ -208,7 +192,6 @@ export interface FileRoutesByFullPath {
   '/protected/cart': typeof ProtectedCartIndexRoute
   '/protected/payment': typeof ProtectedPaymentIndexRoute
   '/protected/profile': typeof ProtectedProfileIndexRoute
-  '/protected/payment/end': typeof ProtectedPaymentEndIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -221,7 +204,6 @@ export interface FileRoutesByTo {
   '/protected/cart': typeof ProtectedCartIndexRoute
   '/protected/payment': typeof ProtectedPaymentIndexRoute
   '/protected/profile': typeof ProtectedProfileIndexRoute
-  '/protected/payment/end': typeof ProtectedPaymentEndIndexRoute
 }
 
 export interface FileRoutesById {
@@ -236,7 +218,6 @@ export interface FileRoutesById {
   '/protected/cart/': typeof ProtectedCartIndexRoute
   '/protected/payment/': typeof ProtectedPaymentIndexRoute
   '/protected/profile/': typeof ProtectedProfileIndexRoute
-  '/protected/payment/end/': typeof ProtectedPaymentEndIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -252,7 +233,6 @@ export interface FileRouteTypes {
     | '/protected/cart'
     | '/protected/payment'
     | '/protected/profile'
-    | '/protected/payment/end'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -264,7 +244,6 @@ export interface FileRouteTypes {
     | '/protected/cart'
     | '/protected/payment'
     | '/protected/profile'
-    | '/protected/payment/end'
   id:
     | '__root__'
     | '/'
@@ -277,7 +256,6 @@ export interface FileRouteTypes {
     | '/protected/cart/'
     | '/protected/payment/'
     | '/protected/profile/'
-    | '/protected/payment/end/'
   fileRoutesById: FileRoutesById
 }
 
@@ -326,8 +304,7 @@ export const routeTree = rootRoute
         "/protected/",
         "/protected/cart/",
         "/protected/payment/",
-        "/protected/profile/",
-        "/protected/payment/end/"
+        "/protected/profile/"
       ]
     },
     "/auth/login": {
@@ -356,10 +333,6 @@ export const routeTree = rootRoute
     },
     "/protected/profile/": {
       "filePath": "protected/profile/index.tsx",
-      "parent": "/protected"
-    },
-    "/protected/payment/end/": {
-      "filePath": "protected/payment/end/index.tsx",
       "parent": "/protected"
     }
   }

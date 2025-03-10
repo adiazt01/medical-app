@@ -5,617 +5,543 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Heart, InfoIcon, Minus, Plus, Share2, ShoppingCart, Star, Truck } from "lucide-react";
-import { useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import Image from "@/modules/core/components/Image";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  InfoIcon,
+  Minus,
+  Plus,
+  Share2,
+  ShoppingCart,
+  Star,
+  Truck,
+  MapPin,
+  Check,
+  ArrowLeft,
+} from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getProduct } from "@/modules/products/services/medicines-api";
+import { getBranchsMedicinesByMedicineId } from "@/modules/products/services/branchs-medicines-api";
+import { useForm } from "@tanstack/react-form";
+import { useToast } from "@/modules/core/hooks/use-toast";
+import { addProductToCart } from "@/modules/cart/services/cart-api";
+import { FieldInfo } from "@/modules/core/components/input/form-info";
 
-export const Route = createFileRoute('/products/$productId')({
-    component: ProductPage,
-    loader: async ({ params }) => {
-        console.log('Loading product', params.productId);
-        return `Product ID: ${params.productId}`;
-    }
-})
+export const Route = createFileRoute("/products/$productId")({
+  component: ProductPage,
+});
 
 function ProductPage() {
-    const [quantity, setQuantity] = useState(1)
-    const [activeImage, setActiveImage] = useState(0)
+  const { productId } = useParams({ from: "/products/$productId" });
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-    const incrementQuantity = () => {
-        setQuantity((prev) => prev + 1)
-    }
+  const { data, isFetching } = useQuery({
+    queryKey: ["products", productId],
+    queryFn: async () => {
+      const response = await getProduct(Number(productId));
+      return response;
+    },
+  });
 
-    const decrementQuantity = () => {
-        if (quantity > 1) {
-            setQuantity((prev) => prev - 1)
-        }
-    }
+  const { data: branchsMedicines, isLoading: branchsMedicinesLoading } =
+    useQuery({
+      queryKey: ["branchsMedicines", productId],
+      queryFn: async () => {
+        const response = await getBranchsMedicinesByMedicineId(
+          Number(productId),
+        );
+        return response;
+      },
+    });
 
-    // Producto de ejemplo
-    const product = {
-        id: 1,
-        name: "Vitamina C 1000mg con Zinc y Vitamina D",
-        price: "$24.99",
-        originalPrice: "$29.99",
-        discount: "17% OFF",
-        rating: 4.8,
-        reviewCount: 124,
-        description:
-            "Suplemento de Vitamina C de alta potencia con Zinc y Vitamina D para fortalecer el sistema inmunológico. Cada tableta proporciona 1000mg de Vitamina C, 15mg de Zinc y 1000 UI de Vitamina D3.",
-        features: [
-            "Fortalece el sistema inmunológico",
-            "Antioxidante potente",
-            "Ayuda a la absorción de hierro",
-            "Contribuye a la formación de colágeno",
-            "Apoya la salud ósea",
-        ],
-        images: [
-            "/placeholder.svg?height=500&width=500&text=Vitamina+C",
-            "/placeholder.svg?height=500&width=500&text=Frasco",
-            "/placeholder.svg?height=500&width=500&text=Tabletas",
-            "/placeholder.svg?height=500&width=500&text=Ingredientes",
-        ],
-        stock: "En stock",
-        brand: "NutriHealth",
-        category: "Vitaminas y Suplementos",
-        sku: "VIT-C1000-ZD",
-        dosage: "1 tableta diaria",
-        form: "Tabletas",
-        quantity: "60 tabletas",
-        expiryDate: "24 meses desde la fecha de fabricación",
-    }
+  const mutation = useMutation({
+    mutationFn: async ({
+      productBranchId,
+      quantity,
+    }: {
+      productBranchId: string;
+      quantity: number;
+    }) => {
+      const response = await addProductToCart(
+        Number(productBranchId),
+        quantity,
+      );
+      return response;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["cart-items"],
+        refetchType: "active",
+      });
+      
+      toast({
+        title: "Producto agregado al carrito",
+        description: "El producto se ha agregado correctamente al carrito.",
+      });
+    },
+  });
 
-    // Sucursales de ejemplo
-    const branches = [
-        { id: 1, name: "Sucursal Centro", stock: 15, address: "Av. Principal 123, Centro" },
-        { id: 2, name: "Sucursal Norte", stock: 8, address: "Blvd. Norte 456, Zona Industrial" },
-        { id: 3, name: "Sucursal Sur", stock: 0, address: "Calle Sur 789, Residencial Las Palmas" },
-        { id: 4, name: "Sucursal Este", stock: 22, address: "Av. Oriente 234, Plaza Comercial" },
-        { id: 5, name: "Sucursal Oeste", stock: 0, address: "Calle Poniente 567, Centro Comercial Oeste" },
-    ]
+  const form = useForm({
+    defaultValues: {
+      productBranchId: "",
+      quantity: 1,
+    },
+    onSubmit: async ({
+      value,
+    }: {
+      value: { productBranchId: string; quantity: number };
+    }) => {
+      await mutation.mutateAsync({
+        productBranchId: value.productBranchId,
+        quantity: value.quantity,
+      });
+    },
+  });
 
-    // Reseñas de ejemplo
-    const reviews = [
-        {
-            id: 1,
-            name: "María García",
-            rating: 5,
-            date: "15 mayo, 2023",
-            comment:
-                "Excelente producto. Desde que comencé a tomarlo he notado una mejora en mi energía y no me he enfermado en todo el invierno.",
-        },
-        {
-            id: 2,
-            name: "Carlos Rodríguez",
-            rating: 4,
-            date: "3 abril, 2023",
-            comment:
-                "Buen producto, las tabletas son un poco grandes pero se pueden partir fácilmente. He notado mejoría en mi salud general.",
-        },
-        {
-            id: 3,
-            name: "Laura Martínez",
-            rating: 5,
-            date: "22 marzo, 2023",
-            comment:
-                "Lo compro regularmente para toda mi familia. La calidad es excelente y el precio es muy bueno comparado con otras marcas.",
-        },
-    ]
-
-    // Productos relacionados
-    const relatedProducts = [
-        {
-            id: 1,
-            name: "Vitamina D3 5000 UI",
-            price: "$19.99",
-            image: "/placeholder.svg?height=200&width=200&text=Vitamina+D3",
-            rating: 4.5,
-            reviewCount: 86,
-        },
-        {
-            id: 2,
-            name: "Zinc 50mg",
-            price: "$14.99",
-            image: "/placeholder.svg?height=200&width=200&text=Zinc",
-            rating: 4.3,
-            reviewCount: 52,
-        },
-        {
-            id: 3,
-            name: "Complejo B",
-            price: "$22.99",
-            image: "/placeholder.svg?height=200&width=200&text=Complejo+B",
-            rating: 4.7,
-            reviewCount: 104,
-        },
-        {
-            id: 4,
-            name: "Multivitamínico",
-            price: "$29.99",
-            image: "/placeholder.svg?height=200&width=200&text=Multivitamínico",
-            rating: 4.6,
-            reviewCount: 138,
-        },
-    ]
-
+  if (!data || !branchsMedicines) {
     return (
-        <div className="container px-4 py-6 md:py-8">
-            {/* Breadcrumb y navegación */}
-            <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center text-sm text-muted-foreground">
-                    <Link href="/medicine-ecommerce" className="hover:text-primary">
-                        Inicio
-                    </Link>
-                    <ChevronRight className="mx-1 h-4 w-4" />
-                    <Link href="/products-listing" className="hover:text-primary">
-                        Vitaminas y Suplementos
-                    </Link>
-                    <ChevronRight className="mx-1 h-4 w-4" />
-                    <span className="truncate max-w-[150px] sm:max-w-none">Vitamina C 1000mg</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
-
-            {/* Contenido principal */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {/* Galería de imágenes */}
-                <div className="md:col-span-1">
-                    <div className="mb-3 overflow-hidden rounded-lg border">
-                        <img
-                            src={product.images[activeImage] || "/placeholder.svg"}
-                            alt={product.name}
-                            className="h-full w-full object-cover"
-                        />
-                    </div>
-                    <div className="grid grid-cols-4 gap-2">
-                        {product.images.map((image, index) => (
-                            <div
-                                key={index}
-                                className={`cursor-pointer overflow-hidden rounded-md border ${activeImage === index ? "ring-2 ring-primary" : ""
-                                    }`}
-                                onClick={() => setActiveImage(index)}
-                            >
-                                <img
-                                    src={image || "/placeholder.svg"}
-                                    alt={`${product.name} ${index + 1}`}
-                                    className="h-full w-full object-cover"
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Información del producto */}
-                <div className="md:col-span-1 lg:col-span-2">
-                    <div className="space-y-4">
-                        <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant="outline" className="text-xs">
-                                    {product.category}
-                                </Badge>
-                                <Badge variant="outline" className="text-xs">
-                                    {product.brand}
-                                </Badge>
-                                {product.discount && <Badge className="bg-primary text-primary-foreground">{product.discount}</Badge>}
-                            </div>
-                            <h1 className="mt-2 text-2xl font-bold sm:text-3xl">{product.name}</h1>
-                            <div className="mt-1 flex items-center gap-2">
-                                <div className="flex">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star
-                                            key={i}
-                                            className={`h-4 w-4 ${i < Math.floor(product.rating)
-                                                    ? "fill-primary text-primary"
-                                                    : "fill-muted text-muted-foreground"
-                                                }`}
-                                        />
-                                    ))}
-                                </div>
-                                <span className="text-sm text-muted-foreground">
-                                    {product.rating} ({product.reviewCount} reseñas)
-                                </span>
-                                <Link href="#reviews" className="text-sm text-primary hover:underline">
-                                    Ver reseñas
-                                </Link>
-                            </div>
-                        </div>
-
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-bold">{product.price}</span>
-                            {product.originalPrice && (
-                                <span className="text-sm text-muted-foreground line-through">{product.originalPrice}</span>
-                            )}
-                            <Badge variant="outline" className="ml-2 text-xs text-green-600">
-                                Envío gratis
-                            </Badge>
-                        </div>
-
-                        <Separator />
-
-                        <div className="space-y-2">
-                            <p className="text-sm text-muted-foreground">{product.description}</p>
-                        </div>
-
-                        <div>
-                            <h3 className="mb-2 font-medium">Características principales:</h3>
-                            <ul className="space-y-1">
-                                {product.features.map((feature, index) => (
-                                    <li key={index} className="flex items-start text-sm">
-                                        <span className="mr-2 text-primary">•</span>
-                                        {feature}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        <Separator />
-
-                        {/* Información de disponibilidad */}
-                        <div className="space-y-3">
-                            <h3 className="font-medium">Disponibilidad por sucursal:</h3>
-                            <div className="grid gap-2 sm:grid-cols-2">
-                                {branches.map((branch) => (
-                                    <div key={branch.id} className="rounded-md border p-2">
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-medium text-sm">{branch.name}</span>
-                                            {branch.stock > 0 ? (
-                                                <Badge variant="outline" className="bg-green-50 text-green-600">
-                                                    {branch.stock} disponibles
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="outline" className="bg-red-50 text-red-600">
-                                                    Agotado
-                                                </Badge>
-                                            )}
-                                        </div>
-                                        <p className="mt-1 text-xs text-muted-foreground">{branch.address}</p>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Truck className="h-4 w-4" />
-                                <span>Envío a domicilio disponible</span>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
-                                                <InfoIcon className="h-4 w-4" />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p className="max-w-xs text-xs">
-                                                Envío gratis en compras mayores a $50. Tiempo estimado de entrega: 1-3 días hábiles.
-                                            </p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            </div>
-                        </div>
-
-                        <Separator />
-
-                        <div className="space-y-4">
-                            <div className="flex items-center">
-                                <span className="mr-2 text-sm font-medium">Cantidad:</span>
-                                <div className="flex items-center">
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-r-none"
-                                        onClick={decrementQuantity}
-                                        disabled={quantity <= 1}
-                                    >
-                                        <Minus className="h-3 w-3" />
-                                    </Button>
-                                    <Input
-                                        type="number"
-                                        min="1"
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(Number.parseInt(e.target.value) || 1)}
-                                        className="h-8 w-12 rounded-none border-x-0 text-center"
-                                    />
-                                    <Button variant="outline" size="icon" className="h-8 w-8 rounded-l-none" onClick={incrementQuantity}>
-                                        <Plus className="h-3 w-3" />
-                                    </Button>
-                                </div>
-                                <span className="ml-4 text-sm text-muted-foreground">{product.stock}</span>
-                            </div>
-
-                            <div className="flex flex-col gap-2 sm:flex-row">
-                                <Button className="flex-1 gap-2">
-                                    <ShoppingCart className="h-4 w-4" />
-                                    Agregar al carrito
-                                </Button>
-                                <Button variant="outline" size="icon">
-                                    <Heart className="h-4 w-4" />
-                                </Button>
-                                <Button variant="outline" size="icon">
-                                    <Share2 className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Pestañas de información adicional */}
-            <div className="mt-8">
-                <Tabs defaultValue="description">
-                    <TabsList className="w-full justify-start">
-                        <TabsTrigger value="description">Descripción</TabsTrigger>
-                        <TabsTrigger value="specifications">Especificaciones</TabsTrigger>
-                        <TabsTrigger value="reviews" id="reviews">
-                            Reseñas ({reviews.length})
-                        </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="description" className="mt-4">
-                        <Card>
-                            <CardContent className="p-4 sm:p-6">
-                                <div className="space-y-4">
-                                    <div>
-                                        <h3 className="text-lg font-medium">Descripción detallada</h3>
-                                        <p className="mt-2 text-sm text-muted-foreground">
-                                            La Vitamina C es un nutriente esencial que el cuerpo no puede producir por sí mismo. Este
-                                            suplemento de alta potencia proporciona 1000mg de Vitamina C por tableta, junto con Zinc y
-                                            Vitamina D para un apoyo inmunológico completo.
-                                        </p>
-                                        <p className="mt-2 text-sm text-muted-foreground">
-                                            La Vitamina C contribuye a la función normal del sistema inmunitario y a la protección de las
-                                            células contra el estrés oxidativo. También ayuda a reducir el cansancio y la fatiga, y aumenta la
-                                            absorción de hierro.
-                                        </p>
-                                        <p className="mt-2 text-sm text-muted-foreground">
-                                            El Zinc contribuye al funcionamiento normal del sistema inmunitario y a la protección de las
-                                            células contra el estrés oxidativo. La Vitamina D contribuye al funcionamiento normal del sistema
-                                            inmunitario y al mantenimiento de los huesos en condiciones normales.
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-lg font-medium">Modo de empleo</h3>
-                                        <p className="mt-2 text-sm text-muted-foreground">
-                                            Tomar 1 tableta al día con alimentos. No exceder la dosis diaria recomendada.
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-lg font-medium">Ingredientes</h3>
-                                        <p className="mt-2 text-sm text-muted-foreground">
-                                            Ácido L-ascórbico (Vitamina C), agente de carga (celulosa microcristalina), citrato de zinc,
-                                            colecalciferol (Vitamina D3), antiaglomerantes (estearato de magnesio vegetal, dióxido de
-                                            silicio).
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-lg font-medium">Advertencias</h3>
-                                        <p className="mt-2 text-sm text-muted-foreground">
-                                            Mantener fuera del alcance de los niños. No utilizar si el sello de seguridad está roto. Los
-                                            suplementos alimenticios no deben utilizarse como sustituto de una dieta variada y equilibrada y
-                                            un estilo de vida saludable. Consultar con un profesional de la salud en caso de embarazo,
-                                            lactancia o si está tomando medicamentos.
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                    <TabsContent value="specifications" className="mt-4">
-                        <Card>
-                            <CardContent className="p-4 sm:p-6">
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-medium">Especificaciones del producto</h3>
-                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                        <div className="space-y-3">
-                                            <div className="grid grid-cols-2 gap-2 border-b pb-2">
-                                                <span className="font-medium">Marca:</span>
-                                                <span>{product.brand}</span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2 border-b pb-2">
-                                                <span className="font-medium">Categoría:</span>
-                                                <span>{product.category}</span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2 border-b pb-2">
-                                                <span className="font-medium">SKU:</span>
-                                                <span>{product.sku}</span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2 border-b pb-2">
-                                                <span className="font-medium">Forma:</span>
-                                                <span>{product.form}</span>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-3">
-                                            <div className="grid grid-cols-2 gap-2 border-b pb-2">
-                                                <span className="font-medium">Dosis:</span>
-                                                <span>{product.dosage}</span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2 border-b pb-2">
-                                                <span className="font-medium">Cantidad:</span>
-                                                <span>{product.quantity}</span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2 border-b pb-2">
-                                                <span className="font-medium">Caducidad:</span>
-                                                <span>{product.expiryDate}</span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2 border-b pb-2">
-                                                <span className="font-medium">Almacenamiento:</span>
-                                                <span>Lugar fresco y seco</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-4">
-                                        <h3 className="text-lg font-medium">Información nutricional</h3>
-                                        <div className="mt-2 overflow-x-auto">
-                                            <table className="w-full min-w-[400px] border-collapse">
-                                                <thead>
-                                                    <tr className="border-b">
-                                                        <th className="py-2 text-left font-medium">Nutriente</th>
-                                                        <th className="py-2 text-left font-medium">Por tableta</th>
-                                                        <th className="py-2 text-left font-medium">%VRN*</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr className="border-b">
-                                                        <td className="py-2">Vitamina C</td>
-                                                        <td className="py-2">1000 mg</td>
-                                                        <td className="py-2">1250%</td>
-                                                    </tr>
-                                                    <tr className="border-b">
-                                                        <td className="py-2">Zinc</td>
-                                                        <td className="py-2">15 mg</td>
-                                                        <td className="py-2">150%</td>
-                                                    </tr>
-                                                    <tr className="border-b">
-                                                        <td className="py-2">Vitamina D3</td>
-                                                        <td className="py-2">1000 UI (25 μg)</td>
-                                                        <td className="py-2">500%</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                            <p className="mt-2 text-xs text-muted-foreground">*VRN: Valores de Referencia de Nutrientes</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                    <TabsContent value="reviews" className="mt-4">
-                        <Card>
-                            <CardContent className="p-4 sm:p-6">
-                                <div className="space-y-6">
-                                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                        <div>
-                                            <h3 className="text-lg font-medium">Reseñas de clientes</h3>
-                                            <div className="mt-1 flex items-center gap-2">
-                                                <div className="flex">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <Star
-                                                            key={i}
-                                                            className={`h-4 w-4 ${i < Math.floor(product.rating)
-                                                                    ? "fill-primary text-primary"
-                                                                    : "fill-muted text-muted-foreground"
-                                                                }`}
-                                                        />
-                                                    ))}
-                                                </div>
-                                                <span className="text-sm font-medium">{product.rating} de 5</span>
-                                                <span className="text-sm text-muted-foreground">Basado en {product.reviewCount} reseñas</span>
-                                            </div>
-                                        </div>
-                                        <Button>Escribir reseña</Button>
-                                    </div>
-
-                                    <div className="grid gap-4 sm:grid-cols-[1fr_3fr]">
-                                        <div className="space-y-4 rounded-lg bg-muted p-4">
-                                            <h4 className="font-medium">Resumen de calificaciones</h4>
-                                            <div className="space-y-2">
-                                                {[5, 4, 3, 2, 1].map((star) => (
-                                                    <div key={star} className="flex items-center gap-2">
-                                                        <div className="flex w-16 items-center">
-                                                            <span className="text-sm">{star}</span>
-                                                            <Star className="ml-1 h-3 w-3 fill-primary text-primary" />
-                                                        </div>
-                                                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted-foreground/20">
-                                                            <div
-                                                                className="h-full rounded-full bg-primary"
-                                                                style={{
-                                                                    width: `${star === 5 ? "70" : star === 4 ? "20" : star === 3 ? "5" : star === 2 ? "3" : "2"
-                                                                        }%`,
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        <span className="text-xs text-muted-foreground">
-                                                            {star === 5 ? "70" : star === 4 ? "20" : star === 3 ? "5" : star === 2 ? "3" : "2"}%
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            {reviews.map((review) => (
-                                                <div key={review.id} className="space-y-2 rounded-lg border p-4">
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex items-center gap-2">
-                                                            <Avatar className="h-8 w-8">
-                                                                <AvatarImage src={`/placeholder.svg?text=${review.name.charAt(0)}`} />
-                                                                <AvatarFallback>{review.name.charAt(0)}</AvatarFallback>
-                                                            </Avatar>
-                                                            <div>
-                                                                <div className="font-medium">{review.name}</div>
-                                                                <div className="text-xs text-muted-foreground">{review.date}</div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex">
-                                                            {[...Array(5)].map((_, i) => (
-                                                                <Star
-                                                                    key={i}
-                                                                    className={`h-4 w-4 ${i < review.rating ? "fill-primary text-primary" : "fill-muted text-muted-foreground"
-                                                                        }`}
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                    <p className="text-sm">{review.comment}</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                </Tabs>
-            </div>
-
-            {/* Productos relacionados */}
-            <div className="mt-8">
-                <h2 className="mb-4 text-xl font-bold">Productos relacionados</h2>
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-                    {relatedProducts.map((item) => (
-                        <Card key={item.id} className="overflow-hidden">
-                            <div className="relative">
-                                <img
-                                    src={item.image || "/placeholder.svg"}
-                                    alt={item.name}
-                                    className="aspect-square w-full object-cover"
-                                />
-                                <Button size="icon" variant="ghost" className="absolute right-2 top-2 h-8 w-8 rounded-full">
-                                    <Heart className="h-4 w-4" />
-                                </Button>
-                            </div>
-                            <CardContent className="p-3">
-                                <h3 className="line-clamp-2 text-sm font-medium">{item.name}</h3>
-                                <div className="mt-1 flex items-center gap-1">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star
-                                            key={i}
-                                            className={`h-3 w-3 ${i < Math.floor(item.rating) ? "fill-primary text-primary" : "fill-muted text-muted-foreground"
-                                                }`}
-                                        />
-                                    ))}
-                                    <span className="text-xs text-muted-foreground">({item.reviewCount})</span>
-                                </div>
-                                <div className="mt-2 flex items-center justify-between">
-                                    <span className="font-bold">{item.price}</span>
-                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                                        <ShoppingCart className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            </div>
+      <div className="bg-background min-h-screen">
+        {/* Breadcrumb skeleton */}
+        <div className="container px-4 py-4">
+          <div className="h-5 w-32 rounded-md bg-muted animate-pulse"></div>
         </div>
-    )
+
+        <div className="container px-4 py-6 md:py-8">
+          {/* Main content skeleton */}
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {/* Product image skeleton */}
+            <div className="md:col-span-1 space-y-6">
+              <div className="overflow-hidden rounded-xl border bg-muted shadow-sm animate-pulse">
+                <div className="relative aspect-square"></div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  <div className="h-4 w-24 rounded-md bg-muted animate-pulse"></div>
+                </div>
+                <div className="flex gap-2">
+                  <div className="h-9 w-9 rounded-full bg-muted animate-pulse"></div>
+                  <div className="h-9 w-9 rounded-full bg-muted animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Product information skeleton */}
+            <div className="md:col-span-1 lg:col-span-2">
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 w-20 rounded-full bg-muted animate-pulse"></div>
+                    <div className="h-5 w-20 rounded-full bg-muted animate-pulse"></div>
+                  </div>
+                  <div className="h-10 w-3/4 rounded-md bg-muted animate-pulse"></div>
+                  <div className="flex items-baseline gap-2">
+                    <div className="h-8 w-24 rounded-md bg-muted animate-pulse"></div>
+                    <div className="h-5 w-28 rounded-full bg-muted animate-pulse"></div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="h-4 w-full rounded-md bg-muted animate-pulse"></div>
+                  <div className="h-4 w-5/6 rounded-md bg-muted animate-pulse"></div>
+                  <div className="h-4 w-4/6 rounded-md bg-muted animate-pulse"></div>
+                </div>
+
+                <div className="rounded-lg bg-muted/30 p-4 border">
+                  <div className="h-5 w-40 rounded-md bg-muted animate-pulse mb-3"></div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-full bg-muted animate-pulse"></div>
+                    <div className="h-5 w-48 rounded-md bg-muted animate-pulse"></div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="h-6 w-48 rounded-md bg-muted animate-pulse"></div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div
+                          key={i}
+                          className="rounded-lg border p-4 bg-muted/20 animate-pulse"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="h-5 w-5 rounded-full bg-muted"></div>
+                              <div className="h-5 w-32 rounded-md bg-muted"></div>
+                            </div>
+                            <div className="h-5 w-24 rounded-full bg-muted"></div>
+                          </div>
+                          <div className="flex items-start gap-1 pl-7">
+                            <div className="h-4 w-full rounded-md bg-muted"></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-6 sm:flex-row sm:items-end">
+                    <div className="space-y-2">
+                      <div className="h-5 w-20 rounded-md bg-muted animate-pulse"></div>
+                      <div className="flex items-center">
+                        <div className="h-10 w-36 rounded-md bg-muted animate-pulse"></div>
+                      </div>
+                    </div>
+
+                    <div className="h-12 sm:flex-1 rounded-md bg-muted animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Additional information tabs skeleton */}
+          <div className="mt-12">
+            <div className="w-full border-b mb-6">
+              <div className="flex gap-4 pb-2">
+                <div className="h-6 w-24 rounded-md bg-muted animate-pulse"></div>
+                <div className="h-6 w-24 rounded-md bg-muted animate-pulse"></div>
+                <div className="h-6 w-24 rounded-md bg-muted animate-pulse"></div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="h-7 w-48 rounded-md bg-muted animate-pulse"></div>
+              <div className="space-y-2">
+                <div className="h-4 w-full rounded-md bg-muted animate-pulse"></div>
+                <div className="h-4 w-5/6 rounded-md bg-muted animate-pulse"></div>
+                <div className="h-4 w-4/6 rounded-md bg-muted animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const hasStock = branchsMedicines.some((branch) => branch.quantity > 0);
+
+  return (
+    <div className="bg-background min-h-screen">
+      <div className="container px-4 py-6 md:py-8">
+        {/* Main content */}
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {/* Product images */}
+          <div className="md:col-span-1 space-y-6">
+            <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
+              <div className="relative">
+                <Image
+                  queryKey="productImage"
+                  file={data.file}
+                  alt={data.name}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Product information */}
+          <div className="md:col-span-1 lg:col-span-2">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-primary/10 text-primary hover:bg-primary/20 px-2 py-0.5">
+                    {data.therapeuticAction.name}
+                  </Badge>
+                  {hasStock ? (
+                    <Badge
+                      variant="outline"
+                      className="bg-green-50 text-green-600 border-green-200"
+                    >
+                      En stock
+                    </Badge>
+                  ) : (
+                    <Badge
+                      variant="outline"
+                      className="bg-amber-50 text-amber-600 border-amber-200"
+                    >
+                      Stock limitado
+                    </Badge>
+                  )}
+                </div>
+                <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+                  {data.name}
+                </h1>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-primary">
+                    ${data.price}
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className="flex items-center gap-1 text-green-600 border-green-200"
+                  >
+                    <Truck className="h-3 w-3" />
+                    Envío gratis
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="prose prose-sm max-w-none text-muted-foreground">
+                <p>{data.description}</p>
+              </div>
+
+              <div className="rounded-lg bg-muted/50 p-4 border">
+                <h3 className="font-medium mb-2">Componente principal:</h3>
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                    <Check className="h-4 w-4 text-primary" />
+                  </div>
+                  <span>{data.mainComponent.name}</span>
+                </div>
+              </div>
+
+              <Separator />
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  form.handleSubmit();
+                }}
+                className="space-y-6"
+              >
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">
+                    Seleccione una sucursal
+                  </h3>
+                  <form.Field
+                    name="productBranchId"
+                    children={(field) => (
+                      <div className="space-y-3">
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {branchsMedicines.map((branchsMedicine) => (
+                            <div
+                              key={branchsMedicine.id}
+                              className={`relative rounded-lg border p-4 cursor-pointer transition-all ${
+                                field.state.value ===
+                                branchsMedicine.id.toString()
+                                  ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm"
+                                  : "hover:border-muted-foreground/30 hover:bg-muted/30"
+                              } ${branchsMedicine.quantity <= 0 ? "opacity-60" : ""}`}
+                              onClick={() => {
+                                if (branchsMedicine.quantity > 0) {
+                                  field.handleChange(
+                                    branchsMedicine.id.toString(),
+                                  );
+                                }
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className={`flex h-5 w-5 items-center justify-center rounded-full ${
+                                      field.state.value ===
+                                      branchsMedicine.id.toString()
+                                        ? "bg-primary text-primary-foreground"
+                                        : "border border-muted-foreground/30"
+                                    }`}
+                                  >
+                                    {field.state.value ===
+                                      branchsMedicine.id.toString() && (
+                                      <Check className="h-3 w-3" />
+                                    )}
+                                  </div>
+                                  <span className="font-medium">
+                                    {branchsMedicine.branch.name}
+                                  </span>
+                                </div>
+                                {branchsMedicine.quantity > 0 ? (
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-green-50 text-green-600 border-green-200"
+                                  >
+                                    {branchsMedicine.quantity} disponibles
+                                  </Badge>
+                                ) : (
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-red-50 text-red-600 border-red-200"
+                                  >
+                                    Agotado
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="mt-2 flex items-start gap-1 text-xs text-muted-foreground pl-7">
+                                <MapPin className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                                <span>{branchsMedicine.branch.address}</span>
+                              </div>
+                              {branchsMedicine.quantity <= 0 && (
+                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/60 backdrop-blur-[1px]">
+                                  <p className="rounded-md bg-background/90 px-3 py-1 text-sm font-medium text-muted-foreground shadow-sm">
+                                    No disponible
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        {field.state.meta.touchedErrors ? (
+                          <p className="text-sm font-medium text-destructive">
+                            {field.state.meta.touchedErrors}
+                          </p>
+                        ) : null}
+                      </div>
+                    )}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-6 sm:flex-row sm:items-end">
+                  <div className="space-y-2">
+                    <label htmlFor="quantity" className="text-sm font-medium">
+                      Cantidad
+                    </label>
+                    <form.Field
+                      name="quantity"
+                      children={(field) => (
+                        <div className="flex items-center">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-10 w-10 rounded-r-none"
+                            onClick={() =>
+                              field.handleChange(
+                                Math.max(1, field.state.value - 1),
+                              )
+                            }
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <Input
+                            id="quantity"
+                            type="number"
+                            min="1"
+                            className="h-10 w-16 rounded-none border-x-0 text-center"
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) =>
+                              field.handleChange(Number(e.target.value))
+                            }
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-10 w-10 rounded-l-none"
+                            onClick={() =>
+                              field.handleChange(field.state.value + 1)
+                            }
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    />
+                  </div>
+
+                  <form.Subscribe
+                    selector={(state) => [state.canSubmit, state.isSubmitting]}
+                    children={([canSubmit, isSubmitting]) => (
+                      <Button
+                        type="submit"
+                        disabled={!canSubmit}
+                        className="sm:flex-1 gap-2"
+                        size="lg"
+                      >
+                        <ShoppingCart className="h-5 w-5" />
+                        {isSubmitting ? "Agregando..." : "Agregar al carrito"}
+                      </Button>
+                    )}
+                  />
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional information tabs */}
+        <div className="mt-12">
+          <Tabs defaultValue="description" className="w-full">
+            <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 mb-6">
+              <TabsTrigger
+                value="description"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-2 pt-1 px-4 text-base"
+              >
+                Descripción
+              </TabsTrigger>
+              <TabsTrigger
+                value="details"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-2 pt-1 px-4 text-base"
+              >
+                Detalles
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="description" className="mt-0">
+              <Card className="border-none shadow-none">
+                <CardContent className="p-0 space-y-4">
+                  <h3 className="text-xl font-medium">Descripción detallada</h3>
+                  <div className="prose prose-sm max-w-none">
+                    <p>
+                      {data.description} {data.description}
+                    </p>
+                    <p>
+                      El componente principal de este medicamento es{" "}
+                      {data.mainComponent.name}, que actúa directamente sobre{" "}
+                      {data.therapeuticAction.name}.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="details" className="mt-0">
+              <Card className="border-none shadow-none">
+                <CardContent className="p-0">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-3">
+                      <h3 className="text-xl font-medium">Especificaciones</h3>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="font-medium">Componente principal</div>
+                        <div>{data.mainComponent.name}</div>
+                        <div className="font-medium">Acción terapéutica</div>
+                        <div>{data.therapeuticAction.name}</div>
+                        <div className="font-medium">Presentación</div>
+                        <div>Caja con 30 tabletas</div>
+                        <div className="font-medium">Vía de administración</div>
+                        <div>Oral</div>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <h3 className="text-xl font-medium">
+                        Información adicional
+                      </h3>
+                      <div className="text-sm space-y-2">
+                        <p>
+                          Conservar en lugar fresco y seco a temperatura
+                          ambiente, protegido de la luz.
+                        </p>
+                        <p>Manténgase fuera del alcance de los niños.</p>
+                        <p>Su venta requiere receta médica.</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    </div>
+  );
 }

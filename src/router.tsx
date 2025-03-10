@@ -5,6 +5,7 @@ export const router = createRouter({
     routeTree,
     context: {
       auth: undefined!
-    }
+    },
+    defaultViewTransition: true,
+    scrollRestoration: true,
   })
-  
