@@ -7,6 +7,7 @@ import { Heart, Menu, Search, ShoppingCart, User } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import Navbar from '@/modules/core/components/navbar/Navbar'
 
 interface IRouterContext {
   auth: ReturnType<typeof useAuth>
@@ -21,6 +22,7 @@ function RootComponent() {
 
   console.log(auth)
   return (
+<<<<<<< HEAD
     <div className='relative min-h-screen w-full flex flex-col'>
       <header className="sticky justify-between top-0 z-40 w-full border-b bg-background">
         <div className=" flex h-16 items-center py-4">
@@ -87,5 +89,14 @@ function RootComponent() {
       <Outlet />
       <TanStackRouterDevtools position="bottom-right" />
     </div>
+=======
+    <>
+      <Navbar />
+      <div className='relative max-w-screen-xl mx-auto min-h-screen w-full flex flex-col'>
+        <Outlet />
+        <TanStackRouterDevtools position="bottom-right" />
+      </div>
+    </>
+>>>>>>> b3453fa5b7f3a49d689826ad02a4a2321cd26f8f
   )
 }

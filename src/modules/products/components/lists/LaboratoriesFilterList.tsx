@@ -1,5 +1,5 @@
 import React from 'react'
-import { ILaboratory } from '../../interface/laborayory-interface'
+import { ILaboratory } from '../../interface/laboratiry-interface'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 

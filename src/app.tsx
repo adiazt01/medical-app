@@ -5,7 +5,7 @@ import { router } from "./router";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useAuth } from "./modules/auth/hooks/useAuth";
 
-const queryClient = new QueryClient()
+export const queryClient = new QueryClient()
 
 
 export function App() {
