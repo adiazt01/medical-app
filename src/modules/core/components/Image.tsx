@@ -2,16 +2,6 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { getImage } from "@/supabase/supabase";
 import { useQuery } from "@tanstack/react-query";
 
-interface ImageProps {
-  file: {
-    path: string;
-    id: number;
-  }
-  alt: string;
-  queryKey: string;
-}
-
-
 export default function Image({
   queryKey,
   file,
@@ -26,6 +16,7 @@ export default function Image({
     },
   })
 
+
   console.log('Image data:', data);
 
   if (isLoading) {
@@ -36,17 +27,16 @@ export default function Image({
     )
   }
 
-  if (!data?.publicUrl) {
-    return (
-      <>
-        Error loading image
-      </>
-    )
-  }
+
 
   return (
     <AspectRatio ratio={4 / 3}>
       <img src={data.publicUrl} alt="Image" className="h-full"/>
+
+  return (
+    <AspectRatio ratio={4 / 3} className="relative">
+      <img src={data?.publicUrl} alt="Image"  className="object-cover h-full w-full"/>
+
     </AspectRatio>
   )
 }
