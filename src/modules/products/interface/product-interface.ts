@@ -1,20 +1,28 @@
+import { IFile } from "@/modules/core/interface/file";
+
 export interface IProduct {
     id: number;
-    file: {
-        id: number;
-        path: string;
-    }
     name: string;
-    brand: string;
-    rating: number;
-    reviewCount: number;
     price: number;
-    originalPrice?: number;
-    discount?: string;
-    inStock: boolean;
-    availableBranches: string[];
+    description: string;
+    fileId: number;
+    therapeuticActionId: number;
+    presentationId: number;
+    mainComponentId: number;
+    laboratoryId: number;
+    createdAt: string;
+    updatedAt: string;
+    file: IFile;
+    laboratory: ILaboratory;
 }
 
+export interface ILaboratory {
+    id: number;
+    name: string;
+    description: string;
+    address: string;
+    phone: string;
+}
 
 export interface IGetProductsResponse {
     data: IProduct[];
