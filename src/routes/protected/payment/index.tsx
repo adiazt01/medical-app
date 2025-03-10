@@ -30,6 +30,9 @@ function RouteComponent() {
   const mutate = useMutation({
     mutationKey: ['create-payment'],
     mutationFn: async (data: any) => {
+      if (!data.method) {
+        throw new Error('No se ha seleccionado un método de pago')
+      }
       const response = await createPayment(data)
       return response;
     },
